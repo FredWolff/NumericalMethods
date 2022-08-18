@@ -1,5 +1,6 @@
 import numpy as np
 import jax.numpy as jnp
+import matplotlib.pyplot as plt
 
 a = jnp.arange(5)
 print(2*a)
