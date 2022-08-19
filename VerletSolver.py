@@ -31,9 +31,25 @@ def verlet_solver(rhs, ts, y0, v0):
     #     accs2 = rhs(ys[i + 1], v)
     #     vs = vs.at[i + 1].set(v + 0.5 * (accs2 - accs1) * dt)
 
+    def step(index, x, v, theta, omega):
+
+
     
 
     return ys, vs
+
+
+def x_acc(F, theta, omega, alpha):
+    return (F + m * l * (alpha * jnp.cos(theta) - omega**2 * jnp.sin(theta))) / (M + m)
+
+
+def theta_acc(a, theta):
+    return (g * jnp.sin(theta) + a * jnp.cos(theta)) / l
+
+
+def get_acc(F, a, theta, omega, alpha):
+    return x_acc(F, theta, omega, alpha), theta_acc(a, theta)
+
 
 def rhs(ys, vs):
     return jnp.array([0, -1])
