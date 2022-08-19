@@ -1,9 +1,9 @@
 from re import L
 import jax.numpy as jnp
-from jax import lax.scan as scan
+import jax
 import matplotlib.pyplot as plt
 
-def verlet_solver(rhs, ts, y0, v0):
+def verlet_solver(rhs, ts, x0, v0, system):
     """Function to solve a system of two ODEs with Verlet integration. Algorithm is taken from
     url: https://physics.stackexchange.com/questions/239621/quadratic-drag-projectile-motion.
     
@@ -14,12 +14,15 @@ def verlet_solver(rhs, ts, y0, v0):
         ys and vs both have shape (n,). Must return array of shape (n,).
     ts      array
         Array of equidistant time points.
-    y0      array
+    x0      array
         Array of initial positions.
     v0      array
         Array of inital velocities.
+    system  class
+        Class defining sizes in the system.
 
     """
+    l, m, M = system.l, system.m, system.M
     dt = ts[1] - ts[0]  # step size
     # ys = jnp.zeros(shape=(ts.size, y0.size))  # initiate position array
     # vs = jnp.zeros(shape=(ts.size, v0.size))  # initiate velocity array
@@ -33,22 +36,45 @@ def verlet_solver(rhs, ts, y0, v0):
     #     accs2 = rhs(ys[i + 1], v)
     #     vs = vs.at[i + 1].set(v + 0.5 * (accs2 - accs1) * dt)
 
-    _, (x, v, theta, omega)
+    def step(_, carry):  # could be vectorized in force for reinforcement learning
+        """Function performing a single iteration in a velocity-Velvet solver
+        using a predictor-corrector strategy to increase percision for a velocity-
+        depedent acceleration. Return accomodates structure of jax.lax.scan.
+        
+        """
+        force, p_vec, v_vec, a_vec = carry
+        a_vec = get_acc(force, p_vec[1], v_vec[1], *a_vec)
+        p_vec, v_vec = new_vec(p_vec, v_vec, a_vec)
+        new_a_vec = get_acc(force, p_vec[1], v_vec[1], *a_vec)
+        v_vec += dt * (new_a_vec - a_vec) / 2
+        return (force, p_vec, v_vec, a_vec), (x, v, theta, omega)
 
-    return ys, vs
+    a0 = get_acc(force, x0[1], v0[1])
+    init_val = (force, x0, v0, a0)
+    _, (x, v, theta, omega) = jax.lax.scan(lambda c, x: step(x, c), init_val, ts)
+
+    return 
 
 
 ############## System ##############
-def x_acc(force, theta, omega, alpha):
-    return (force + m * l * (alpha * jnp.cos(theta) - omega**2 * jnp.sin(theta))) / (M + m)
+def x_acc(A, force, theta, omega, g = 9.82):
+    T1 = m * (g * jnp.sin(theta) + A) * jnp.cos(theta) / (1 - m * jnp.cos(theta)**2 / (m + M)
+    return (force + T1 - omega**2 * jnp.sin(theta)) / (m + M)
 
 
-def theta_acc(a, theta):
-    return (g * jnp.sin(theta) + a * jnp.cos(theta)) / l
+def theta_acc(A, force, theta, omega, g = 9.82):
+    return (g * jnp.sin(theta) + A) / (l * (1 - m * jnp.cos(theta)**2 / (m + M)))
 
 
-def get_acc(force, a, theta, omega, alpha):
-    return x_acc(force, theta, omega, alpha), theta_acc(a, theta)
+def get_acc(force, theta, omega):
+    A = (force - m * l * omega**2 * jnp.sin(theta)) * jnp.cos(theta) / (m + M)
+    return (x_acc(A, force, theta, omega), theta_acc(A, force, theta, omega))
+
+
+def new_vec(p_vec, v_vec, a_vec):
+    dpos = dt * (v_vec + dt * a_vec / 2)
+    dvel = dt * a_vec
+    return p_vec + dpos, v_vec + dvel
 
 
 class Sys():
@@ -68,7 +94,7 @@ class Sys():
 
 def rhs(ys, vs):
     return jnp.array([0, -1])
-    
+
 
 if __name__ == '__main__':
     ts = jnp.linspace(0, 6, 100)
