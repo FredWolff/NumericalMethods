@@ -24,12 +24,12 @@ def verlet_solver(rhs, ts, y0, v0):
 
     ys = ys.at[0].set(y0)
     vs = vs.at[0].set(v0)
-    # for i in range(len(ts) - 1):
-    #     accs1 = rhs(ys[i], vs[i])
-    #     v = vs[i] + 0.5 * accs1 * dt
-    #     ys = ys.at[i + 1].set(ys[i] + v * dt)
-    #     accs2 = rhs(ys[i + 1], v)
-    #     vs = vs.at[i + 1].set(v + 0.5 * (accs2 - accs1) * dt)
+    for i in range(len(ts) - 1):
+        accs1 = rhs(ys[i], vs[i])
+        v = vs[i] + 0.5 * accs1 * dt
+        ys = ys.at[i + 1].set(ys[i] + v * dt)
+        accs2 = rhs(ys[i + 1], v)
+        vs = vs.at[i + 1].set(v + 0.5 * (accs2 - accs1) * dt)
 
     
 
@@ -38,8 +38,11 @@ def verlet_solver(rhs, ts, y0, v0):
 def rhs(ys, vs):
     return jnp.array([0, -1])
 
+
+
+
 if __name__ == '__main__':
-    ts = jnp.linspace(0, 6, 100)
+    ts = jnp.linspace(0, 3 * jnp.pi, 100)
     y0 = jnp.array([0, 0])
     v0 = jnp.array([jnp.sqrt(2), jnp.sqrt(2)])
 
