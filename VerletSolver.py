@@ -58,7 +58,7 @@ def verlet_solver(rhs, ts, x0, v0, system):
 
 ############## System ##############
 def x_acc(A, force, theta, omega, g = 9.82):
-    T1 = m * (g * jnp.sin(theta) + A) * jnp.cos(theta) / (1 - m * jnp.cos(theta)**2 / (m + M)
+    T1 = m * (g * jnp.sin(theta) + A) * jnp.cos(theta) / (1 - m * jnp.cos(theta)**2) / (m + M)
     return (force + T1 - omega**2 * jnp.sin(theta)) / (m + M)
 
 
