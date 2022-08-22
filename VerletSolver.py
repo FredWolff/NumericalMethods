@@ -29,6 +29,7 @@ def verlet_solver(rhs, ts, x0, v0, system):
     # ys = jnp.zeros(shape=(ts.size, y0.size))  # initiate position array
     # vs = jnp.zeros(shape=(ts.size, v0.size))  # initiate velocity array
 
+
     # ys = ys.at[0].set(y0)
     # vs = vs.at[0].set(v0)
     # for i in range(len(ts) - 1):
@@ -105,7 +106,7 @@ def rhs(ys, vs):
 
 
 if __name__ == '__main__':
-    ts = jnp.linspace(0, 6, 100)
+    ts = jnp.linspace(0, 3 * jnp.pi, 100)
     y0 = jnp.array([0, 0])
     v0 = jnp.array([jnp.sqrt(2), jnp.sqrt(2)])
 
