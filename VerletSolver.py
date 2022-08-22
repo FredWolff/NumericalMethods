@@ -3,6 +3,8 @@ import jax.numpy as jnp
 import jax
 import matplotlib.pyplot as plt
 
+g = 9.82
+
 def verlet_solver(rhs, ts, x0, v0, system):
     """Function to solve a system of two ODEs with Verlet integration. Algorithm is taken from
     url: https://physics.stackexchange.com/questions/239621/quadratic-drag-projectile-motion.
@@ -57,18 +59,24 @@ def verlet_solver(rhs, ts, x0, v0, system):
 
 
 ############## System ##############
-def x_acc(A, force, theta, omega, g = 9.82):
-    T1 = m * (g * jnp.sin(theta) + A) * jnp.cos(theta) / (1 - m * jnp.cos(theta)**2) / (m + M)
-    return (force + T1 - omega**2 * jnp.sin(theta)) / (m + M)
-
-
-def theta_acc(A, force, theta, omega, g = 9.82):
-    return (g * jnp.sin(theta) + A) / (l * (1 - m * jnp.cos(theta)**2 / (m + M)))
+def theta_acc(A, force, omega, a, b, g = 9.82):
+    return (g * b + A) / (l * (1 - m * a**2 / (m + M)))
 
 
 def get_acc(force, theta, omega):
-    A = (force - m * l * omega**2 * jnp.sin(theta)) * jnp.cos(theta) / (m + M)
-    return (x_acc(A, force, theta, omega), theta_acc(A, force, theta, omega))
+    a = jnp.cos(theta)
+    b = jnp.sin(theta)
+    m_tot = m + M
+    A = (force - m * l * omega**2 * b) * a / m_tot
+    x_acc = (
+        (force + m * (g * b + A) * a / 
+        (1 - m * a**2) / m_tot - 
+        omega**2 * b) / m_tot
+    ) 
+    theta_acc = (
+        (g * b + A) / (l * (1 - m * a**2 / m_tot))
+    )
+    return x_acc, theta_acc
 
 
 def new_vec(p_vec, v_vec, a_vec):
