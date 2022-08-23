@@ -31,7 +31,7 @@ def animate_pendulum(ts, ys, length, filename=None):
     timetext = ax.text(0.1, 0.9, '', transform=ax.transAxes)
 
     def init():
-        timetext.set_text('t = {:.1f}'.format(ts[0]))
+        timetext.set_text('')
         ax.add_patch(cart)
         ax.add_patch(pendulum)
         ax.add_patch(bob)
@@ -50,7 +50,7 @@ def animate_pendulum(ts, ys, length, filename=None):
 
         return []
 
-    anim = FuncAnimation(fig, animate, frames=10, init_func=init, interval=(ts[-1] - ts[0]) / len(ts) * 1000, blit=True, repeat=True)
+    anim = FuncAnimation(fig, animate, frames=len(ts), init_func=init, interval=(ts[-1] - ts[0]) / len(ts) * 1000, blit=True, repeat=True)
 
     # potentially save a file anim.save
 
