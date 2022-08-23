@@ -42,9 +42,9 @@ def animate_pendulum(ts, ys, length, filename=None):
 
     def animate(i):
         timetext.set_text('t = {:.1f}'.format(ts[i]))
-        if x[i] < xlims[0] + length:
+        if xs[i] < xlims[0] + length:
             xlims = (xlims[0] - length, xlims[1] - length)
-        elif x[i] > xlims[1] - length:
+        elif xs[i] > xlims[1] - length:
             xlims = (xlims[0] + length, xlims[1] + length)
         ax.set_xlim(*xlims)
         new_pos = jnp.array([xs[i], 0]) + jnp.array([-cart_width / 2, -cart_height / 2])
