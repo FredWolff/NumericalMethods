@@ -8,12 +8,14 @@ def animate_pendulum(ts, ys, length, filename=None):
     xs = ys[:, 0]
     thetas = ys[:, 1]
 
-    xlims = (-1 - length + jnp.min(xs), length + 1 + jnp.max(xs))
+    #xlims = (-1 - length + jnp.min(xs), length + 1 + jnp.max(xs))
+    xlims = (-1 - length, length + 1)
     ylims = (-length, length + 0.2)
 
     fig, ax = plt.subplots()
     ax.set_xlim(*xlims)
     ax.set_ylim(*ylims)
+    ax.grid(True)
     plt.gca().set_aspect('equal', adjustable='box')
 
     cart_height = 0.2
@@ -40,6 +42,11 @@ def animate_pendulum(ts, ys, length, filename=None):
 
     def animate(i):
         timetext.set_text('t = {:.1f}'.format(ts[i]))
+        if x[i] < xlims[0] + length:
+            xlims = (xlims[0] - length, xlims[1] - length)
+        elif x[i] > xlims[1] - length:
+            xlims = (xlims[0] + length, xlims[1] + length)
+        ax.set_xlim(*xlims)
         new_pos = jnp.array([xs[i], 0]) + jnp.array([-cart_width / 2, -cart_height / 2])
         cart.set_xy(new_pos)
         new_xy2 = jnp.array([xs[i], cart_height / 2])
