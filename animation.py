@@ -1,15 +1,15 @@
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, ConnectionPatch
+from matplotlib.patches import Rectangle, ConnectionPatch, Circle
 from matplotlib.animation import FuncAnimation
 
 
-def animate_pendulum2(ts, ys, length, filename=None):
+def animate_pendulum(ts, ys, length, filename=None):
     xs = ys[:, 0]
     thetas = ys[:, 1]
 
-    xlims = (-2, 2)
-    ylims = (-length, length)
+    xlims = (-1 - length + jnp.min(xs), length + 1 + jnp.max(xs))
+    ylims = (-length, length + 0.2)
 
     fig, ax = plt.subplots()
     ax.set_xlim(*xlims)
@@ -27,26 +27,30 @@ def animate_pendulum2(ts, ys, length, filename=None):
     init_xyB = jnp.array([xs[0], cart_height / 2])
     init_xyA = length * cartesian_unit(thetas[0]) + jnp.array([xs[0], -cart_height / 2])
     pendulum = ConnectionPatch(init_xyA, init_xyB, coordsA=ax.transData)
-    
+    bob = Circle(init_xyA, radius=0.05, color='b')
+    timetext = ax.text(0.1, 0.9, '', transform=ax.transAxes)
 
     def init():
+        timetext.set_text('t = {:.1f}'.format(ts[0]))
         ax.add_patch(cart)
         ax.add_patch(pendulum)
+        ax.add_patch(bob)
 
         return []
 
     def animate(i):
-        new_pos = jnp.array([xs[i + 1], 0]) + jnp.array([-cart_width / 2, -cart_height / 2])
+        timetext.set_text('t = {:.1f}'.format(ts[i]))
+        new_pos = jnp.array([xs[i], 0]) + jnp.array([-cart_width / 2, -cart_height / 2])
         cart.set_xy(new_pos)
-        new_xy2 = jnp.array([xs[i + 1], cart_height / 2])
-        new_xy1 = length * cartesian_unit(thetas[i + 1]) + new_xy2
+        new_xy2 = jnp.array([xs[i], cart_height / 2])
+        new_xy1 = length * cartesian_unit(thetas[i]) + new_xy2
         pendulum.xy1 = new_xy1
         pendulum.xy2 = new_xy2
+        bob.center = new_xy1
 
         return []
 
-    anim = FuncAnimation(fig, animate, frames=len(ts) - 1, init_func=init, interval=ts[-1] / len(ts) * 1000, blit=True, repeat=False)
-    plt.show()
+    anim = FuncAnimation(fig, animate, frames=10, init_func=init, interval=(ts[-1] - ts[0]) / len(ts) * 1000, blit=True, repeat=True)
 
     # potentially save a file anim.save
 
@@ -62,7 +66,7 @@ def animate_pendulum2(ts, ys, length, filename=None):
 
 
 if __name__ == '__main__':
-    from NumericalMethods.rk45_solver import rk45
+    from rk45_solver import rk45
 
     def rhs(y, t, m, M, l, g=9.81):
         x = y[0]
@@ -75,24 +79,30 @@ if __name__ == '__main__':
 
         return jnp.array([v, omega, v_dot, omega_dot])
 
-    y0 = jnp.array([0, jnp.pi / 2, 0, 0])
-    ts = jnp.linspace(0, 5, 5 * 30)
+    fps = 30
+    length = 1.
+    y0 = jnp.array([0, 0, 5 / 10, 5], dtype=jnp.float32)
+    ts = jnp.linspace(0, 5, 5 * fps)
 
-    rhs_ = lambda y, t: rhs(y, t, 0.1, 100, 1)
+    rhs_ = lambda y, t: rhs(y, t, 1., 10., 1.)
     ys = rk45(rhs_, ts, y0, h0=0.001)
 
     # anim = animate_pendulum(ts, ys, 10)
     # print(type(anim))
     # plt.show()
 
-    anim, lens = animate_pendulum2(ts, ys, 1)
+    anim = animate_pendulum(ts, ys, 1)
     fig, ax = plt.subplots()
 
-    ax.plot(lens)
 
 
 
 
 
 
+# [xs, thetas, vs, omegas] = odeint(lambda y, t: rhs(y, t, **kwargs), ts, y0, h0)
 
+# def loss(F, y0):
+#     ys = odeint(lambda y, t: rhs(y, t, m, M, l, g, F), [0, h], y0, h0)
+
+#     return ys[1]
