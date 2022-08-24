@@ -11,7 +11,7 @@ def animate_pendulum(ts, ys, length, filename=None):
     xlims = (-1 - length + jnp.min(xs), length + 1 + jnp.max(xs))
     ylims = (-length, length + 0.2)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6, 6))
     ax.set_xlim(*xlims)
     ax.set_ylim(*ylims)
     plt.gca().set_aspect('equal', adjustable='box')
