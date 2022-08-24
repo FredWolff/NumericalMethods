@@ -4,16 +4,15 @@ from matplotlib.patches import Rectangle, ConnectionPatch, Circle
 from matplotlib.animation import FuncAnimation
 
 
-def animate_pendulum(ts, ys, length, filename=None):
+def animate_pendulum(ts, ys, length, rolling_ax = False, filename=None):
     xs = ys[:, 0]
     thetas = ys[:, 1]
 
-    xlims = (-1 - length + jnp.min(xs), length + 1 + jnp.max(xs))
     ylims = (-length, length + 0.2)
 
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.set_xlim(*xlims)
+    fig, ax = plt.subplots()
     ax.set_ylim(*ylims)
+    ax.grid(True)
     plt.gca().set_aspect('equal', adjustable='box')
 
     cart_height = 0.2
@@ -28,18 +27,29 @@ def animate_pendulum(ts, ys, length, filename=None):
     init_xyA = length * cartesian_unit(thetas[0]) + jnp.array([xs[0], -cart_height / 2])
     pendulum = ConnectionPatch(init_xyA, init_xyB, coordsA=ax.transData)
     bob = Circle(init_xyA, radius=0.05, color='b')
-    timetext = ax.text(0.1, 0.9, '', transform=ax.transAxes)
+    timetext1 = ax.text(0.1, 0.9, '', transform=ax.transAxes)
 
     def init():
-        timetext.set_text('')
+        timetext1.set_text('')
         ax.add_patch(cart)
         ax.add_patch(pendulum)
         ax.add_patch(bob)
+        if rolling_ax == True:
+            xlims = (-1 - length, length + 1)
+        else:
+            xlims = (-1 - length + jnp.min(xs), length + 1 + jnp.max(xs))
+        ax.set_xlim(*xlims)
 
         return []
 
     def animate(i):
-        timetext.set_text('t = {:.1f}'.format(ts[i]))
+        timetext1.set_text('t = {:.1f}'.format(ts[i]))
+        if rolling_ax == True:
+            center = sum(ax.get_xlim())/2
+            if jnp.absolute(xs[i] - center) > length:
+                dif_sign = jnp.sign(xs[i] - center)
+                xlims = (xs[i] - (dif_sign + 1) * length - 1, xs[i] + 1 - (dif_sign - 1) * length)
+                ax.set_xlim(*xlims)
         new_pos = jnp.array([xs[i], 0]) + jnp.array([-cart_width / 2, -cart_height / 2])
         cart.set_xy(new_pos)
         new_xy2 = jnp.array([xs[i], cart_height / 2])
