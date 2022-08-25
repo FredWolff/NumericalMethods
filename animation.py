@@ -25,7 +25,7 @@ def animate_pendulum(ts, ys, length, rolling_ax=False, filename=None):
         return jnp.array([-jnp.sin(theta), jnp.cos(theta)])
 
     init_xyB = jnp.array([xs[0], cart_height / 2])
-    init_xyA = length * cartesian_unit(thetas[0]) + jnp.array([xs[0], -cart_height / 2])
+    init_xyA = length * cartesian_unit(thetas[0]) + jnp.array([xs[0], cart_height / 2])
     pendulum = ConnectionPatch(init_xyA, init_xyB, coordsA=ax.transData)
     bob = Circle(init_xyA, radius=0.05, color='b')
     timetext = ax.text(0.1, 0.9, '', transform=ax.transAxes)
