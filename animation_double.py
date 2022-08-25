@@ -10,7 +10,7 @@ def animate_double_pendulum(ts, ys, length_bottom, length_top, rolling_ax=False,
     theta2 = ys[:, 2]
     length_parallel = length_bottom + length_top
 
-    ylims = (-3 - length_parallel, length_parallel + 3)
+    ylims = (-1 - length_parallel, length_parallel + 1)
     offset = 5
 
     fig, ax = plt.subplots()
@@ -70,7 +70,7 @@ def animate_double_pendulum(ts, ys, length_bottom, length_top, rolling_ax=False,
         pendulum_bottom.xy2 = new_xy2
         bob_middle.center = new_xy1
         # New Top Pendulum Pos
-        new_xy3 = length_top * cartesian_unit(theta2[0]) + new_xy1
+        new_xy3 = length_top * cartesian_unit(theta2[i]) + new_xy1
         pendulum_top.xy1 = new_xy3
         pendulum_top.xy2 = new_xy1
         bob_top.center = new_xy3
