@@ -24,7 +24,7 @@ def animate_double_pendulum(ts, ys, length_bottom, length_top, rolling_ax=False,
     cart = Rectangle(init_pos, cart_width, cart_height, fill=True, color='r')
 
     def cartesian_unit(theta):
-        return jnp.array([-jnp.sin(theta), jnp.cos(theta)])
+        return jnp.array([jnp.sin(theta), jnp.cos(theta)])
 
     init_xyA = jnp.array([xs[0], cart_height / 2])
     # Bottom Pendulum
